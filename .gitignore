@@ -227,9 +227,6 @@ outputs/
 *.bmp
 *.tiff
 
-# Test files (temporary)
-test_*.py
-debug_*.py
 
 # TensorBoard logs
 events.out.tfevents.*
