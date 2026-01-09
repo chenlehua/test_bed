@@ -1,0 +1,46 @@
+# Wide & Deep CTR 模型 TensorFlow Serving Docker Compose 配置
+#
+# 使用说明:
+#   启动服务: docker-compose up -d
+#   停止服务: docker-compose down
+#   查看日志: docker-compose logs -f
+
+version: '3.8'
+
+services:
+  wide-deep-serving:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: wide-deep-ctr-serving
+    ports:
+      - "8500:8500"  # gRPC 端口
+      - "8501:8501"  # REST API 端口
+    volumes:
+      # 可选：挂载模型目录，便于热更新模型
+      - ./exported_models/wide_deep_ctr:/models/wide_deep_ctr:ro
+    environment:
+      - TF_CPP_MIN_LOG_LEVEL=1  # 减少日志输出
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8501/v1/models/wide_deep_ctr"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    
+    # 资源限制（可选）
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 512M
+
+  # 可选：添加 Prometheus 监控
+  # prometheus:
+  #   image: prom/prometheus:latest
+  #   ports:
+  #     - "9090:9090"
+  #   volumes:
+  #     - ./prometheus.yml:/etc/prometheus/prometheus.yml
